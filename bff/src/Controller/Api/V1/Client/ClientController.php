@@ -21,4 +21,9 @@ final class ClientController extends AbstractController
     {
         return $this->json($this->clientService->editInfo($editInfoDto));
     }
+
+    public function editBirthday(EditInfoDto $editInfoDto): Response
+    {
+
+    }
 }
