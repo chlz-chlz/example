@@ -16,10 +16,11 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class Serializer
+final class Serializer implements SerializerInterface, DenormalizerInterface, NormalizerInterface
 {
     private SerializerInterface $serializer;
 
@@ -52,30 +53,43 @@ final class Serializer
         $this->serializer = new \Symfony\Component\Serializer\Serializer($normalizers, $encoders);
     }
 
-    public function getSerializer(): SerializerInterface
+    public function supportsDenormalization($data, string $type, string $format = null)
     {
-        return $this->serializer;
+        return $this->serializer->supportsDenormalization($data, $type, $format);
     }
 
-    public function denormalize(?array $data, string $class): object
+    public function normalize($object, string $format = null, array $context = [])
     {
-        if (!$data || 0 === count($data)) {
-            return new $class;
-        }
+        return $this->serializer->normalize($object, $format, $context);
+    }
+
+    public function supportsNormalization($data, string $format = null)
+    {
+        return $this->serializer->supportsNormalization($data, $format);
+    }
+
+    public function deserialize($data, string $type, string $format, array $context = [])
+    {
+        return $this->serializer->serialize($data,$type, $format, $context = []);
+    }
+
+    public function denormalize($data, string $type, string $format = null, array $context = []): object
+    {
 
         return $this->serializer->denormalize(
             data: $data,
-            type: $class,
+            type: $type,
             format: 'array',
             context: [
+                ...$context,
                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
                 AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
             ]
         );
     }
 
-    public function serialize($data): array
+    public function serialize($data, string $format, array $context = [])
     {
-        return array_filter($this->serializer->normalize(data: $data), static fn($value) => $value !== null);
+        return $this->serializer->serialize($data, $format, $context);
     }
 }

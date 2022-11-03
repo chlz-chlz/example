@@ -8,14 +8,12 @@ use App\Dto\DtoInterface;
 use App\Dto\Exception\ErrorDto;
 use App\Dto\Exception\ExceptionDto;
 use App\Exception\ValidationException;
-use App\Serializer\Serializer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Exception\PartialDenormalizationException;
-use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
@@ -24,7 +22,7 @@ final class DtoResolver implements ArgumentValueResolverInterface
     private ArrayCollection $errors;
 
     public function __construct(
-        private readonly Serializer $serializer
+        private readonly DenormalizerInterface $denormalizer
     ) {
         $this->errors = new ArrayCollection();
     }
@@ -41,7 +39,7 @@ final class DtoResolver implements ArgumentValueResolverInterface
 
         try {
             /** @psalm-suppress PossiblyNullArgument */
-            $dto = $this->serializer->denormalize($data, $argument->getType());
+            $dto = $this->denormalizer->denormalize($data, $argument->getType());
         } catch (PartialDenormalizationException $e) {
             /** @var NotNormalizableValueException $exception */
             foreach ($e->getErrors() as $exception) {
