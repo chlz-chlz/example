@@ -24,6 +24,14 @@ final class ClientController extends AbstractController
 
     public function editBirthday(EditInfoDto $editInfoDto): Response
     {
+        try {
+            $response = $this->clientService->editInfo($editInfoDto);
+        } catch (\Exception $e) {
+            throw new \Exception('Exception');
+        } catch (\LogicException $e) {
+            throw new \DomainException('Domain exception');
+        }
 
+        return $this->json($this->clientService->editInfo($editInfoDto));
     }
 }
