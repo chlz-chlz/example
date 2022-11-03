@@ -22,3 +22,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    
+    app.serializer:
+        class: App\Serializer\Serializer
+        
+    Symfony\Component\Serializer\Normalizer\NormalizerInterface: '@app.serializer'
+    Symfony\Component\Serializer\Normalizer\DenormalizerInterface: '@app.serializer'
+    Symfony\Component\Serializer\SerializerInterface: '@app.serializer'
